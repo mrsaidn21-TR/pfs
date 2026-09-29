@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام الإدارة المالية الشخصية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0F1923;--bg2:#162230;--bg3:#1C2D3F;--card:#1A2840;--card2:#1F3045;
+  --gold:#C9A84C;--gold2:#E8C96A;--gold-dim:rgba(201,168,76,.15);
+  --green:#2ECC71;--green-dim:rgba(46,204,113,.12);
+  --red:#E74C3C;--red-dim:rgba(231,76,60,.12);
+  --blue:#3498DB;--blue-dim:rgba(52,152,219,.12);
+  --purple:#9B59B6;--purple-dim:rgba(155,89,182,.12);
+  --text:#E8EDF3;--text2:#8A9BB0;--text3:#4A5A6A;
+  --border:rgba(255,255,255,.07);--border2:rgba(201,168,76,.2);
+  --radius:12px;--radius-sm:8px;
+}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;direction:rtl}
+
+/* ===== LAYOUT ===== */
+.app{display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--bg2);border-left:1px solid var(--border);position:fixed;right:0;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;z-index:100}
+.main{margin-right:240px;flex:1;padding:1.5rem;max-width:1100px}
+
+/* ===== SIDEBAR ===== */
+.sidebar-brand{padding:1.25rem;border-bottom:1px solid var(--border);text-align:center}
+.brand-icon{width:48px;height:48px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto .5rem}
+.brand-name{font-family:'Tajawal';font-size:14px;font-weight:800;color:var(--gold)}
+.brand-sub{font-size:10px;color:var(--text3);letter-spacing:.08em}
+
+.networth-mini{margin:1rem;background:var(--gold-dim);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:.75rem;text-align:center}
+.networth-mini-label{font-size:10px;color:var(--gold);letter-spacing:.08em;margin-bottom:4px}
+.networth-mini-val{font-family:'Tajawal';font-size:20px;font-weight:900;color:var(--gold2)}
+
+.nav-group{margin-bottom:.25rem}
+.nav-label{padding:.4rem 1rem .2rem;font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.1em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 1rem;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;border-right:2px solid transparent;margin:1px 0}
+.nav-item:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.nav-item.active{background:var(--gold-dim);color:var(--gold2);border-right-color:var(--gold);font-weight:600}
+.nav-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-right:auto}
+
+/* ===== PAGES ===== */
+.page{display:none}.page.active{display:block;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== PAGE HEADER ===== */
+.page-header{margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+.page-title{font-family:'Tajawal';font-size:24px;font-weight:900;color:var(--text);margin-bottom:3px}
+.page-sub{font-size:12px;color:var(--text2)}
+
+/* ===== KPI CARDS ===== */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:1.5rem}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;position:relative;overflow:hidden}
+.kpi-card::after{content:'';position:absolute;top:0;right:0;left:0;height:2px}
+.kpi-card.gold::after{background:linear-gradient(90deg,var(--gold),var(--gold2))}
+.kpi-card.green::after{background:var(--green)}
+.kpi-card.red::after{background:var(--red)}
+.kpi-card.blue::after{background:var(--blue)}
+.kpi-card.purple::after{background:var(--purple)}
+.kpi-label{font-size:11px;color:var(--text2);margin-bottom:.4rem;display:flex;align-items:center;gap:6px}
+.kpi-val{font-family:'Tajawal';font-size:26px;font-weight:900;line-height:1.1;margin-bottom:.3rem}
+.kpi-card.gold .kpi-val{color:var(--gold2)}
+.kpi-card.green .kpi-val{color:var(--green)}
+.kpi-card.red .kpi-val{color:var(--red)}
+.kpi-card.blue .kpi-val{color:var(--blue)}
+.kpi-card.purple .kpi-val{color:var(--purple)}
+.kpi-sub{font-size:11px;color:var(--text3)}
+.kpi-badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;margin-top:4px}
+.badge-up{background:var(--green-dim);color:var(--green)}
+.badge-down{background:var(--red-dim);color:var(--red)}
+.badge-neutral{background:var(--gold-dim);color:var(--gold)}
+
+/* ===== SECTION CARDS ===== */
+.section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:1rem;overflow:hidden}
+.section-head{padding:.9rem 1.1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.section-head-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.section-head-total{font-family:'Tajawal';font-size:16px;font-weight:800}
+.section-body{padding:0}
+
+/* ===== TABLE ===== */
+.fin-table{width:100%;border-collapse:collapse}
+.fin-table th{padding:.6rem 1rem;font-size:10px;font-weight:700;color:var(--text3);text-align:right;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg2)}
+.fin-table td{padding:.75rem 1rem;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border);vertical-align:middle}
+.fin-table tr:last-child td{border-bottom:none}
+.fin-table tr:hover td{background:rgba(255,255,255,.02)}
+.fin-table .val{font-family:'Tajawal';font-weight:700;font-size:14px;text-align:left;direction:ltr;white-space:nowrap}
+.val-green{color:var(--green)}
+.val-red{color:var(--red)}
+.val-gold{color:var(--gold2)}
+.val-blue{color:var(--blue)}
+.fin-table .cat-badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600}
+
+/* ===== ADD FORM ===== */
+.add-form{padding:.85rem 1rem;background:var(--bg2);border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.form-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px}
+.form-label{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:.06em}
+.form-input{padding:7px 10px;background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Cairo',sans-serif;font-size:12px;color:var(--text);outline:none;transition:border-color .2s;direction:rtl;width:100%}
+.form-input:focus{border-color:var(--gold)}
+.form-select{padding:7px 10px;background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Cairo',sans-serif;font-size:12px;color:var(--text);outline:none;cursor:pointer;direction:rtl;width:100%}
+.add-btn{padding:8px 18px;background:linear-gradient(135deg,var(--gold),#B8922A);color:#0F1923;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;border:none;border-radius:var(--radius-sm);cursor:pointer;white-space:nowrap;align-self:flex-end}
+.add-btn:hover{filter:brightness(1.1)}
+.del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px 8px;border-radius:4px;transition:all .15s}
+.del-btn:hover{color:var(--red);background:var(--red-dim)}
+
+/* ===== PROGRESS BARS ===== */
+.progress-row{padding:.75rem 1rem;border-bottom:1px solid var(--border)}
+.progress-row:last-child{border-bottom:none}
+.progress-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;font-size:12px}
+.progress-name{color:var(--text);font-weight:500}
+.progress-vals{color:var(--text2);font-size:11px}
+.progress-bar{height:6px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;transition:width .6s ease}
+
+/* ===== CHARTS ===== */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem}
+.chart-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:1rem;display:flex;align-items:center;gap:6px}
+.donut-wrap{position:relative;width:140px;height:140px;margin:0 auto .75rem}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.donut-val{font-family:'Tajawal';font-size:18px;font-weight:900;color:var(--gold2)}
+.donut-lbl{font-size:9px;color:var(--text3)}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);margin-bottom:5px}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ===== DEBT TRACKER ===== */
+.debt-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.9rem 1rem;margin-bottom:8px}
+.debt-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem}
+.debt-name{font-size:13px;font-weight:600;color:var(--text)}
+.debt-amount{font-family:'Tajawal';font-size:16px;font-weight:800;color:var(--red)}
+.debt-meta{display:flex;gap:1rem;font-size:11px;color:var(--text3);margin-bottom:.5rem}
+.debt-progress{height:5px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden}
+.debt-fill{height:100%;background:linear-gradient(90deg,var(--red),#FF6B5A);border-radius:99px}
+.debt-pct{font-size:10px;color:var(--text3);margin-top:3px;text-align:left;direction:ltr}
+
+/* ===== TABS ===== */
+.tab-bar{display:flex;gap:4px;margin-bottom:1.25rem;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab-btn{padding:7px 16px;border:none;background:none;font-family:'Cairo',sans-serif;font-size:12px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;border-radius:6px 6px 0 0}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--gold2);border-bottom-color:var(--gold);background:var(--gold-dim);font-weight:600}
+.tab-pane{display:none}.tab-pane.active{display:block}
+
+/* ===== FORMULA CARD ===== */
+.formula-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:.85rem 1rem;margin-bottom:8px}
+.formula-name{font-size:12px;font-weight:700;color:var(--gold);margin-bottom:.3rem}
+.formula-eq{font-family:monospace;font-size:12px;color:var(--text2);background:var(--bg);padding:.4rem .75rem;border-radius:4px;margin:.3rem 0;display:block}
+.formula-result{font-family:'Tajawal';font-size:18px;font-weight:800;margin-top:.3rem}
+
+/* ===== ALERT ===== */
+.alert{padding:.75rem 1rem;border-radius:var(--radius-sm);font-size:12px;line-height:1.7;margin-bottom:.75rem;display:flex;gap:8px;align-items:flex-start}
+.alert-warn{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.25);color:#FF8070}
+.alert-good{background:var(--green-dim);border:1px solid rgba(46,204,113,.25);color:#5EDED9}
+.alert-info{background:var(--gold-dim);border:1px solid var(--border2);color:var(--gold2)}
+
+/* ===== BUTTONS ===== */
+.btn{padding:8px 18px;border-radius:var(--radius-sm);font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#B8922A);color:#0F1923}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){.sidebar{display:none}.main{margin-right:0}.chart-grid{grid-template-columns:1fr}.kpi-grid{grid-template-columns:1fr 1fr}}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+/* ===== CURRENCY SWITCHER ===== */
+.currency-bar{display:flex;align-items:center;gap:8px;padding:.6rem 1rem;background:var(--bg3);border-bottom:1px solid var(--border)}
+.cur-label{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:.08em;flex-shrink:0}
+.cur-btns{display:flex;gap:4px}
+.cur-btn{padding:4px 12px;border:1px solid var(--border);border-radius:99px;font-family:'Cairo',sans-serif;font-size:11px;color:var(--text3);cursor:pointer;background:transparent;transition:all .15s;white-space:nowrap}
+.cur-btn:hover{border-color:var(--gold);color:var(--text)}
+.cur-btn.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold2);font-weight:700}
+.cur-rates-row{display:flex;gap:1rem;padding:.5rem 1rem .4rem;background:rgba(0,0,0,.15);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.cur-rate-chip{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:4px}
+.cur-rate-chip span{color:var(--gold2);font-weight:700;font-family:'Tajawal'}
+.cur-rate-input{width:52px;padding:2px 6px;background:var(--card2);border:1px solid var(--border);border-radius:4px;font-family:'Tajawal',sans-serif;font-size:11px;color:var(--gold2);outline:none;text-align:center}
+.cur-rate-input:focus{border-color:var(--gold)}
+/* Multi-currency badge on table */
+.mc-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:99px;font-size:10px;font-weight:600}
+.mc-sar{background:rgba(46,204,113,.15);color:#2ECC71}
+.mc-usd{background:rgba(52,152,219,.15);color:#3498DB}
+.mc-try{background:rgba(231,76,60,.15);color:#E74C3C}
+
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">💰</div>
+    <div class="brand-name">نظامي المالي</div>
+    <div class="brand-sub">Personal Finance System</div>
+  </div>
+  <div class="networth-mini">
+    <div class="networth-mini-label">صافي الثروة</div>
+    <div class="networth-mini-val" id="sidebar-networth">—</div>
+  </div>
+  <nav style="padding:.5rem 0;flex:1">
+    <div class="nav-group">
+      <div class="nav-label">لوحة القيادة</div>
+      <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
+        <span>📊</span> نظرة عامة <div class="nav-dot" style="background:var(--gold)"></div>
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">الميزانية الشهرية</div>
+      <div class="nav-item" onclick="showPage('income')" id="nav-income">
+        <span>📈</span> الإيرادات <div class="nav-dot" id="dot-income" style="background:var(--text3)"></div>
+      </div>
+      <div class="nav-item" onclick="showPage('expenses')" id="nav-expenses">
+        <span>📉</span> المصروفات <div class="nav-dot" id="dot-expenses" style="background:var(--text3)"></div>
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">الميزانية العمومية</div>
+      <div class="nav-item" onclick="showPage('assets')" id="nav-assets">
+        <span>🏦</span> الأصول <div class="nav-dot" id="dot-assets" style="background:var(--text3)"></div>
+      </div>
+      <div class="nav-item" onclick="showPage('liabilities')" id="nav-liabilities">
+        <span>💳</span> الخصوم والديون <div class="nav-dot" id="dot-liabilities" style="background:var(--text3)"></div>
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">التحليل</div>
+      <div class="nav-item" onclick="showPage('analysis')" id="nav-analysis">
+        <span>🎯</span> تحليل ومؤشرات <div class="nav-dot" style="background:var(--text3)"></div>
+      </div>
+    </div>
+  </nav>
+  <div style="padding:.75rem;border-top:1px solid var(--border)">
+    <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:.5rem">آخر تحديث: <span id="last-update">—</span></div>
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:.6rem .75rem">
+      <div style="font-size:9px;color:var(--gold);font-weight:700;letter-spacing:.08em;margin-bottom:.4rem">🔄 محوّل العملات السريع</div>
+      <div style="display:flex;align-items:center;gap:4px;margin-bottom:.3rem">
+        <input id="conv-amount" type="number" placeholder="0" style="width:60px;padding:3px 6px;background:var(--bg);border:1px solid var(--border);border-radius:4px;font-family:Tajawal;font-size:12px;color:var(--text);outline:none;text-align:left" oninput="convertQuick()">
+        <select id="conv-from" style="flex:1;padding:3px 4px;background:var(--bg);border:1px solid var(--border);border-radius:4px;font-family:Cairo;font-size:11px;color:var(--text2);outline:none" onchange="convertQuick()">
+          <option value="SAR">🇸🇦 ر.س</option>
+          <option value="USD">🇺🇸 $</option>
+          <option value="TRY">🇹🇷 ₺</option>
+        </select>
+      </div>
+      <div style="font-size:9px;color:var(--text3);margin-bottom:.2rem;text-align:center">↕</div>
+      <div id="conv-results" style="font-size:11px;color:var(--text2);line-height:1.8"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ===== MAIN ===== -->
+<main class="main">
+<!-- ===== CURRENCY BAR ===== -->
+<div class="currency-bar">
+  <div class="cur-label">العملة:</div>
+  <div class="cur-btns">
+    <button class="cur-btn active" onclick="setCurrency('SAR',this)">🇸🇦 ر.س</button>
+    <button class="cur-btn" onclick="setCurrency('USD',this)">🇺🇸 $</button>
+    <button class="cur-btn" onclick="setCurrency('TRY',this)">🇹🇷 ₺</button>
+  </div>
+  <div style="margin-right:auto;display:flex;align-items:center;gap:.75rem">
+    <div class="cur-rate-chip">1 $ = <input class="cur-rate-input" id="rate-usd" value="3.75" onchange="updateRates()"> ر.س</div>
+    <div class="cur-rate-chip">1 ₺ = <input class="cur-rate-input" id="rate-try" value="0.115" onchange="updateRates()"> ر.س</div>
+    <div style="font-size:10px;color:var(--text3)">أدخل أسعار الصرف يدوياً</div>
+  </div>
+</div>
+
+<!-- ==================== DASHBOARD ==================== -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header">
+    <div>
+      <div class="page-title">📊 لوحة القيادة المالية</div>
+      <div class="page-sub">نظرة شاملة على وضعك المالي الحالي</div>
+    </div>
+    <button class="btn btn-gold" onclick="refreshAll()">🔄 تحديث الأرقام</button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card gold">
+      <div class="kpi-label">💎 صافي الثروة</div>
+      <div class="kpi-val" id="kpi-networth">0</div>
+      <div class="kpi-sub">الأصول − الخصوم</div>
+      <span class="kpi-badge badge-neutral" id="kpi-nw-badge">محايد</span>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">📈 إجمالي الإيرادات</div>
+      <div class="kpi-val" id="kpi-income">0</div>
+      <div class="kpi-sub">هذا الشهر</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">📉 إجمالي المصروفات</div>
+      <div class="kpi-val" id="kpi-expenses">0</div>
+      <div class="kpi-sub">هذا الشهر</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">💰 صافي التدفق النقدي</div>
+      <div class="kpi-val" id="kpi-cashflow">0</div>
+      <div class="kpi-sub">الإيرادات − المصروفات</div>
+      <span class="kpi-badge" id="kpi-cf-badge">—</span>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">🎯 معدل الادخار</div>
+      <div class="kpi-val" id="kpi-savings-rate">0%</div>
+      <div class="kpi-sub">من إجمالي الدخل</div>
+      <span class="kpi-badge badge-neutral" id="kpi-sr-badge">—</span>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div id="dashboard-alerts"></div>
+
+  <!-- Charts -->
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">🥧 توزيع الإيرادات</div>
+      <div class="donut-wrap">
+        <svg id="donut-income" width="140" height="140" viewBox="0 0 140 140"></svg>
+        <div class="donut-center">
+          <div class="donut-val" id="donut-income-val">0</div>
+          <div class="donut-lbl">إجمالي</div>
+        </div>
+      </div>
+      <div id="legend-income" style="padding:0 .5rem"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🥧 توزيع المصروفات</div>
+      <div class="donut-wrap">
+        <svg id="donut-expenses" width="140" height="140" viewBox="0 0 140 140"></svg>
+        <div class="donut-center">
+          <div class="donut-val" id="donut-expenses-val">0</div>
+          <div class="donut-lbl">إجمالي</div>
+        </div>
+      </div>
+      <div id="legend-expenses" style="padding:0 .5rem"></div>
+    </div>
+  </div>
+
+  <!-- Quick Summary -->
+  <div class="section-card">
+    <div class="section-head">
+      <div class="section-head-title">⚖️ الميزانية العمومية السريعة</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-collapse:collapse">
+      <div style="padding:1rem 1.25rem;border-left:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--green);font-weight:700;margin-bottom:.75rem;letter-spacing:.06em">↑ الأصول</div>
+        <div style="font-family:'Tajawal';font-size:28px;font-weight:900;color:var(--green);margin-bottom:.25rem" id="summary-assets">0</div>
+        <div style="font-size:11px;color:var(--text3)" id="summary-assets-count">0 بند</div>
+      </div>
+      <div style="padding:1rem 1.25rem">
+        <div style="font-size:11px;color:var(--red);font-weight:700;margin-bottom:.75rem;letter-spacing:.06em">↓ الخصوم</div>
+        <div style="font-family:'Tajawal';font-size:28px;font-weight:900;color:var(--red);margin-bottom:.25rem" id="summary-liabilities">0</div>
+        <div style="font-size:11px;color:var(--text3)" id="summary-liabilities-count">0 بند</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== INCOME ==================== -->
+<div class="page" id="page-income">
+  <div class="page-header">
+    <div>
+      <div class="page-title">📈 الإيرادات الشهرية</div>
+      <div class="page-sub">جميع مصادر دخلك الشهرية</div>
+    </div>
+    <div style="font-family:'Tajawal';font-size:22px;font-weight:900;color:var(--green)" id="income-total-header">0 ر.س</div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-head">
+      <div class="section-head-title">💼 مصادر الدخل</div>
+      <div class="section-head-total val-green" id="income-total">0 ر.س</div>
+    </div>
+    <table class="fin-table" id="income-table">
+      <thead><tr>
+        <th>المصدر</th><th>التصنيف</th><th>الحالة</th><th>العملة</th><th>المبلغ الأصلي</th><th>بالريال</th><th></th>
+      </tr></thead>
+      <tbody id="income-tbody"></tbody>
+    </table>
+    <div class="add-form">
+      <div class="form-group" style="flex:2">
+        <div class="form-label">اسم المصدر</div>
+        <input class="form-input" id="in-name" placeholder="مثال: أتعاب استشارات">
+      </div>
+      <div class="form-group">
+        <div class="form-label">التصنيف</div>
+        <select class="form-select" id="in-cat">
+          <option value="استشارات">💼 استشارات</option>
+          <option value="تدريب">🎓 تدريب</option>
+          <option value="كتب">📚 مبيعات كتب</option>
+          <option value="استثمار">📊 استثمار</option>
+          <option value="راتب">💰 راتب</option>
+          <option value="عقارات">🏠 إيجار عقار</option>
+          <option value="أخرى">🔗 أخرى</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">الحالة</div>
+        <select class="form-select" id="in-status">
+          <option value="ثابت">✅ ثابت</option>
+          <option value="متغير">🔄 متغير</option>
+          <option value="موسمي">📅 موسمي</option>
+        </select>
+      </div>
+      <div class="form-group" style="max-width:90px">
+        <div class="form-label">العملة</div>
+        <select class="form-select" id="in-cur">
+          <option value="SAR">🇸🇦 ر.س</option>
+          <option value="USD">🇺🇸 $</option>
+          <option value="TRY">🇹🇷 ₺</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">المبلغ (ر.س)</div>
+        <input class="form-input" id="in-amount" type="number" placeholder="0">
+      </div>
+      <button class="add-btn" onclick="addIncome()">+ أضف</button>
+    </div>
+  </div>
+
+  <!-- Income by Category -->
+  <div class="section-card">
+    <div class="section-head"><div class="section-head-title">📊 الإيرادات حسب المصدر</div></div>
+    <div id="income-by-cat" style="padding:.5rem 0"></div>
+  </div>
+</div>
+
+<!-- ==================== EXPENSES ==================== -->
+<div class="page" id="page-expenses">
+  <div class="page-header">
+    <div>
+      <div class="page-title">📉 المصروفات الشهرية</div>
+      <div class="page-sub">تتبع كل مصاريفك الشخصية والمهنية</div>
+    </div>
+    <div style="font-family:'Tajawal';font-size:22px;font-weight:900;color:var(--red)" id="expenses-total-header">0 ر.س</div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-head">
+      <div class="section-head-title">💸 بنود المصروفات</div>
+      <div class="section-head-total val-red" id="expenses-total">0 ر.س</div>
+    </div>
+    <table class="fin-table" id="expenses-table">
+      <thead><tr>
+        <th>البند</th><th>التصنيف</th><th>النوع</th><th>العملة</th><th>المبلغ الأصلي</th><th>بالريال</th><th></th>
+      </tr></thead>
+      <tbody id="expenses-tbody"></tbody>
+    </table>
+    <div class="add-form">
+      <div class="form-group" style="flex:2">
+        <div class="form-label">اسم البند</div>
+        <input class="form-input" id="ex-name" placeholder="مثال: إيجار المكتب">
+      </div>
+      <div class="form-group">
+        <div class="form-label">التصنيف</div>
+        <select class="form-select" id="ex-cat">
+          <option value="معيشة">🏠 معيشة</option>
+          <option value="تشغيل">⚙️ تشغيل أعمال</option>
+          <option value="تسويق">📣 تسويق وعلامة تجارية</option>
+          <option value="تعليم">📚 تعليم وتطوير</option>
+          <option value="صحة">❤️ صحة</option>
+          <option value="ترفيه">🎭 ترفيه</option>
+          <option value="مدخرات">💎 ادخار/استثمار</option>
+          <option value="أخرى">🔗 أخرى</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">النوع</div>
+        <select class="form-select" id="ex-type">
+          <option value="ثابت">🔒 ثابت</option>
+          <option value="متغير">🔄 متغير</option>
+          <option value="اشتراك">📱 اشتراك</option>
+        </select>
+      </div>
+      <div class="form-group" style="max-width:90px">
+        <div class="form-label">العملة</div>
+        <select class="form-select" id="ex-cur">
+          <option value="SAR">🇸🇦 ر.س</option>
+          <option value="USD">🇺🇸 $</option>
+          <option value="TRY">🇹🇷 ₺</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">المبلغ (ر.س)</div>
+        <input class="form-input" id="ex-amount" type="number" placeholder="0">
+      </div>
+      <button class="add-btn" onclick="addExpense()">+ أضف</button>
+    </div>
+  </div>
+
+  <!-- Breakdown -->
+  <div class="section-card">
+    <div class="section-head"><div class="section-head-title">📊 المصروفات حسب الفئة</div></div>
+    <div id="expenses-by-cat" style="padding:.5rem 0"></div>
+  </div>
+</div>
+
+<!-- ==================== ASSETS ==================== -->
+<div class="page" id="page-assets">
+  <div class="page-header">
+    <div>
+      <div class="page-title">🏦 الأصول</div>
+      <div class="page-sub">كل ما تمتلكه ذو قيمة مالية</div>
+    </div>
+    <div style="font-family:'Tajawal';font-size:22px;font-weight:900;color:var(--green)" id="assets-total-header">0 ر.س</div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab(this,'at-all')">الكل</button>
+    <button class="tab-btn" onclick="switchTab(this,'at-liquid')">💧 سائلة</button>
+    <button class="tab-btn" onclick="switchTab(this,'at-fixed')">🏠 ثابتة</button>
+    <button class="tab-btn" onclick="switchTab(this,'at-invest')">📊 استثمارية</button>
+  </div>
+
+  <div id="at-all" class="tab-pane active">
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-head-title">💎 قائمة الأصول</div>
+        <div class="section-head-total val-green" id="assets-total">0 ر.س</div>
+      </div>
+      <table class="fin-table">
+        <thead><tr>
+          <th>الأصل</th><th>النوع</th><th>السيولة</th><th>العملة</th><th>القيمة الأصلية</th><th>بالريال</th><th></th>
+        </tr></thead>
+        <tbody id="assets-tbody"></tbody>
+      </table>
+      <div class="add-form">
+        <div class="form-group" style="flex:2">
+          <div class="form-label">اسم الأصل</div>
+          <input class="form-input" id="as-name" placeholder="مثال: شقة سكنية">
+        </div>
+        <div class="form-group">
+          <div class="form-label">النوع</div>
+          <select class="form-select" id="as-type">
+            <option value="نقد">💵 نقد وودائع</option>
+            <option value="عقار">🏠 عقار</option>
+            <option value="استثمار">📊 أسهم/صناديق</option>
+            <option value="سيارة">🚗 مركبة</option>
+            <option value="ذهب">🥇 ذهب/معادن</option>
+            <option value="أعمال">💼 حصة في أعمال</option>
+            <option value="أخرى">🔗 أخرى</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <div class="form-label">السيولة</div>
+          <select class="form-select" id="as-liquid">
+            <option value="عالية">💧 عالية</option>
+            <option value="متوسطة">〰️ متوسطة</option>
+            <option value="منخفضة">🔒 منخفضة</option>
+          </select>
+        </div>
+        <div class="form-group" style="max-width:90px">
+          <div class="form-label">العملة</div>
+          <select class="form-select" id="as-cur">
+            <option value="SAR">🇸🇦 ر.س</option>
+            <option value="USD">🇺🇸 $</option>
+            <option value="TRY">🇹🇷 ₺</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <div class="form-label">القيمة (ر.س)</div>
+          <input class="form-input" id="as-value" type="number" placeholder="0">
+        </div>
+        <button class="add-btn" onclick="addAsset()">+ أضف</button>
+      </div>
+    </div>
+    <!-- Asset distribution -->
+    <div class="section-card">
+      <div class="section-head"><div class="section-head-title">📊 توزيع الأصول</div></div>
+      <div id="assets-breakdown" style="padding:.5rem 0"></div>
+    </div>
+  </div>
+
+  <div id="at-liquid" class="tab-pane">
+    <div class="section-card">
+      <div class="section-head"><div class="section-head-title">💧 الأصول السائلة (نقد وودائع)</div></div>
+      <div id="assets-liquid-list" style="padding:.5rem 0"></div>
+    </div>
+  </div>
+  <div id="at-fixed" class="tab-pane">
+    <div class="section-card">
+      <div class="section-head"><div class="section-head-title">🏠 الأصول الثابتة (عقار وسيارات)</div></div>
+      <div id="assets-fixed-list" style="padding:.5rem 0"></div>
+    </div>
+  </div>
+  <div id="at-invest" class="tab-pane">
+    <div class="section-card">
+      <div class="section-head"><div class="section-head-title">📊 الأصول الاستثمارية</div></div>
+      <div id="assets-invest-list" style="padding:.5rem 0"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== LIABILITIES ==================== -->
+<div class="page" id="page-liabilities">
+  <div class="page-header">
+    <div>
+      <div class="page-title">💳 الخصوم والديون</div>
+      <div class="page-sub">تتبع كل التزاماتك المالية وخطة السداد</div>
+    </div>
+    <div style="font-family:'Tajawal';font-size:22px;font-weight:900;color:var(--red)" id="liabilities-total-header">0 ر.س</div>
+  </div>
+
+  <div class="section-card" style="margin-bottom:1rem">
+    <div class="section-head">
+      <div class="section-head-title">💳 قائمة الديون والالتزامات</div>
+      <div class="section-head-total val-red" id="liabilities-total">0 ر.س</div>
+    </div>
+    <table class="fin-table">
+      <thead><tr>
+        <th>الدين / الالتزام</th><th>الجهة</th><th>الفائدة%</th><th>العملة</th><th>القسط/شهر</th><th>المتبقي (ر.س)</th><th></th>
+      </tr></thead>
+      <tbody id="liabilities-tbody"></tbody>
+    </table>
+    <div class="add-form">
+      <div class="form-group" style="flex:2">
+        <div class="form-label">اسم الدين</div>
+        <input class="form-input" id="li-name" placeholder="مثال: قرض عقاري">
+      </div>
+      <div class="form-group">
+        <div class="form-label">الجهة</div>
+        <input class="form-input" id="li-party" placeholder="مثال: بنك الرياض">
+      </div>
+      <div class="form-group" style="max-width:100px">
+        <div class="form-label">الفائدة %</div>
+        <input class="form-input" id="li-interest" type="number" step="0.1" placeholder="0">
+      </div>
+      <div class="form-group">
+        <div class="form-label">القسط الشهري</div>
+        <input class="form-input" id="li-monthly" type="number" placeholder="0">
+      </div>
+      <div class="form-group">
+        <div class="form-label">المبلغ المتبقي</div>
+        <input class="form-input" id="li-remaining" type="number" placeholder="0">
+      </div>
+      <div class="form-group" style="max-width:90px">
+        <div class="form-label">العملة</div>
+        <select class="form-select" id="li-cur">
+          <option value="SAR">🇸🇦 ر.س</option>
+          <option value="USD">🇺🇸 $</option>
+          <option value="TRY">🇹🇷 ₺</option>
+        </select>
+      </div>
+      <button class="add-btn" onclick="addLiability()">+ أضف</button>
+    </div>
+  </div>
+
+  <!-- Debt Cards -->
+  <div class="section-head" style="margin-bottom:.75rem">
+    <div style="font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px">🎯 متابعة خطة السداد</div>
+  </div>
+  <div id="debt-cards"></div>
+</div>
+
+<!-- ==================== ANALYSIS ==================== -->
+<div class="page" id="page-analysis">
+  <div class="page-header">
+    <div>
+      <div class="page-title">🎯 التحليل المالي والمؤشرات</div>
+      <div class="page-sub">KPIs وصيغ حساب الوضع المالي</div>
+    </div>
+  </div>
+
+  <!-- KPI Analysis -->
+  <div class="section-card" style="margin-bottom:1rem">
+    <div class="section-head"><div class="section-head-title">📐 المؤشرات الرئيسية (KPIs)</div></div>
+    <div style="padding:1rem">
+      <div class="formula-card">
+        <div class="formula-name">💎 صافي الثروة — Net Worth</div>
+        <code class="formula-eq">صافي الثروة = إجمالي الأصول − إجمالي الخصوم</code>
+        <div class="formula-result" id="f-networth" style="color:var(--gold2)">—</div>
+      </div>
+      <div class="formula-card">
+        <div class="formula-name">💰 صافي التدفق النقدي — Cash Flow</div>
+        <code class="formula-eq">التدفق = إجمالي الإيرادات − إجمالي المصروفات</code>
+        <div class="formula-result" id="f-cashflow" style="color:var(--blue)">—</div>
+      </div>
+      <div class="formula-card">
+        <div class="formula-name">🎯 معدل الادخار — Savings Rate</div>
+        <code class="formula-eq">معدل الادخار = (التدفق النقدي ÷ الإيرادات) × 100</code>
+        <div class="formula-result" id="f-savings" style="color:var(--green)">—</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">الهدف: ≥ 20% (ممتاز)، 10-20% (جيد)، أقل من 10% (يحتاج تحسين)</div>
+      </div>
+      <div class="formula-card">
+        <div class="formula-name">📊 نسبة الدين إلى الدخل — DTI</div>
+        <code class="formula-eq">DTI = (إجمالي أقساط الديون الشهرية ÷ الدخل الشهري) × 100</code>
+        <div class="formula-result" id="f-dti" style="color:var(--red)">—</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">الهدف: أقل من 35% (آمن)، 35-50% (تحذير)، أكثر من 50% (خطر)</div>
+      </div>
+      <div class="formula-card">
+        <div class="formula-name">🔥 معدل حرق السيولة — Burn Rate</div>
+        <code class="formula-eq">Burn Rate = المصروفات الشهرية (بدون مدخرات)</code>
+        <div class="formula-result" id="f-burn" style="color:var(--purple)">—</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px" id="f-burn-months">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Health Score -->
+  <div class="section-card" style="margin-bottom:1rem">
+    <div class="section-head"><div class="section-head-title">❤️ مؤشر الصحة المالية</div></div>
+    <div style="padding:1.25rem">
+      <div style="text-align:center;margin-bottom:1.25rem">
+        <div style="font-family:'Tajawal';font-size:56px;font-weight:900;line-height:1" id="health-score">—</div>
+        <div style="font-size:14px;font-weight:600;margin-top:.25rem" id="health-label">—</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:.25rem" id="health-desc">أدخل بياناتك لحساب الدرجة</div>
+      </div>
+      <div id="health-bars"></div>
+    </div>
+  </div>
+
+  <!-- Recommendations -->
+  <div class="section-card">
+    <div class="section-head"><div class="section-head-title">💡 توصيات مالية ذكية</div></div>
+    <div id="recommendations" style="padding:1rem;display:flex;flex-direction:column;gap:.75rem">
+      <div class="alert alert-info">💡 أدخل بياناتك في الإيرادات والمصروفات والأصول والديون لتظهر التوصيات المخصصة لوضعك.</div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ===== DATA STORE =====
+let data = {
+  income: [],
+  expenses: [],
+  assets: [],
+  liabilities: []
+};
+
+// Load from localStorage if available
+try {
+  const saved = localStorage.getItem('fin_data_v2');
+  if(saved) data = JSON.parse(saved);
+} catch(e) {}
+
+function save() {
+  try { localStorage.setItem('fin_data_v2', JSON.stringify(data)); } catch(e) {}
+  document.getElementById('last-update').textContent = new Date().toLocaleTimeString('ar-SA');
+  refreshAll();
+}
+
+// ===== CURRENCY SYSTEM =====
+let activeCurrency = 'SAR';
+let rates = { SAR: 1, USD: 3.75, TRY: 0.115 }; // TRY rate = 1 TRY in SAR
+
+const curSymbols = { SAR: 'ر.س', USD: '$', TRY: '₺' };
+const curFlags   = { SAR: '🇸🇦', USD: '🇺🇸', TRY: '🇹🇷' };
+const curClasses = { SAR: 'mc-sar', USD: 'mc-usd', TRY: 'mc-try' };
+
+function updateRates() {
+  rates.USD = parseFloat(document.getElementById('rate-usd').value) || 3.75;
+  rates.TRY = parseFloat(document.getElementById('rate-try').value) || 0.115;
+  refreshAll();
+}
+
+function setCurrency(cur, btn) {
+  activeCurrency = cur;
+  document.querySelectorAll('.cur-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  refreshAll();
+}
+
+// Convert any amount in SAR to active display currency
+function toDisplay(sarAmount) {
+  if(activeCurrency === 'SAR') return sarAmount;
+  if(activeCurrency === 'USD') return sarAmount / rates.USD;
+  if(activeCurrency === 'TRY') return sarAmount / rates.TRY;
+  return sarAmount;
+}
+
+// Convert original currency amount to SAR
+function toSAR(amount, cur) {
+  if(cur === 'SAR') return amount;
+  if(cur === 'USD') return amount * rates.USD;
+  if(cur === 'TRY') return amount * rates.TRY;
+  return amount;
+}
+
+function fmtDisplay(sarAmount) {
+  const val = toDisplay(sarAmount);
+  const sym = curSymbols[activeCurrency];
+  if(Math.abs(val) >= 1000000) return (val/1000000).toFixed(2) + 'M ' + sym;
+  if(Math.abs(val) >= 1000) return (val/1000).toFixed(1) + 'K ' + sym;
+  return Math.round(val).toLocaleString('ar-SA') + ' ' + sym;
+}
+
+function fmtOrig(amount, cur) {
+  const sym = curSymbols[cur] || 'ر.س';
+  if(Math.abs(amount) >= 1000) return (amount/1000).toFixed(1) + 'K ' + sym;
+  return Math.round(amount).toLocaleString('ar-SA') + ' ' + sym;
+}
+
+function curBadge(cur) {
+  return `<span class="mc-badge ${curClasses[cur]||'mc-sar'}">${curFlags[cur]||''} ${curSymbols[cur]||'ر.س'}</span>`;
+}
+
+// ===== NAVIGATION =====
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const nav = document.getElementById('nav-' + id);
+  if(nav) nav.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function switchTab(btn, paneId) {
+  const parent = btn.closest('.page') || btn.parentElement.parentElement;
+  parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  parent.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  const pane = document.getElementById(paneId);
+  if(pane) pane.classList.add('active');
+  renderAssetTabs();
+}
+
+// ===== FORMATTERS =====
+function fmt(n) {
+  if(n === undefined || n === null || isNaN(n)) return '0';
+  return new Intl.NumberFormat('ar-SA').format(Math.round(n));
+}
+function fmtCur(sarAmount) { return fmtDisplay(sarAmount); }
+function fmtPct(n) { return (isNaN(n) ? 0 : n.toFixed(1)) + '%'; }
+
+// ===== CAT COLORS =====
+const incomeColors = {
+  'استشارات':'#C9A84C','تدريب':'#3498DB','كتب':'#9B59B6',
+  'استثمار':'#2ECC71','راتب':'#1ABC9C','عقارات':'#E67E22','أخرى':'#8A9BB0'
+};
+const expenseColors = {
+  'معيشة':'#E74C3C','تشغيل':'#E67E22','تسويق':'#9B59B6',
+  'تعليم':'#3498DB','صحة':'#2ECC71','ترفيه':'#1ABC9C',
+  'مدخرات':'#C9A84C','أخرى':'#8A9BB0'
+};
+const assetColors = {
+  'نقد':'#2ECC71','عقار':'#C9A84C','استثمار':'#3498DB',
+  'سيارة':'#E67E22','ذهب':'#F1C40F','أعمال':'#9B59B6','أخرى':'#8A9BB0'
+};
+function getColor(map, key) { return map[key] || '#8A9BB0'; }
+
+// ===== INCOME =====
+function addIncome() {
+  const name = document.getElementById('in-name').value.trim();
+  const amountOrig = parseFloat(document.getElementById('in-amount').value) || 0;
+  const cur = document.getElementById('in-cur').value;
+  if(!name || !amountOrig) return;
+  const amountSAR = toSAR(amountOrig, cur);
+  data.income.push({
+    id: Date.now(),
+    name,
+    cat: document.getElementById('in-cat').value,
+    status: document.getElementById('in-status').value,
+    amount: amountSAR,
+    amountOrig,
+    cur
+  });
+  document.getElementById('in-name').value = '';
+  document.getElementById('in-amount').value = '';
+  save();
+  renderIncome();
+}
+
+function deleteIncome(id) {
+  data.income = data.income.filter(i => i.id !== id);
+  save(); renderIncome();
+}
+
+function renderIncome() {
+  const tbody = document.getElementById('income-tbody');
+  const total = data.income.reduce((s, i) => s + i.amount, 0);
+  document.getElementById('income-total').textContent = fmtCur(total);
+  document.getElementById('income-total-header').textContent = fmtCur(total);
+
+  tbody.innerHTML = data.income.length === 0 ?
+    `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text3);font-size:13px">لا توجد إيرادات بعد — أضف مصدر دخلك الأول</td></tr>` :
+    data.income.map(i => {
+      const color = getColor(incomeColors, i.cat);
+      const statusColor = i.status === 'ثابت' ? 'var(--green)' : i.status === 'متغير' ? 'var(--gold)' : 'var(--blue)';
+      const cur = i.cur || 'SAR';
+      const origAmt = i.amountOrig || i.amount;
+      return `<tr>
+        <td style="font-weight:500;color:var(--text)">${i.name}</td>
+        <td><span style="background:${color}20;color:${color};padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">${i.cat}</span></td>
+        <td><span style="color:${statusColor};font-size:12px">${i.status}</span></td>
+        <td>${curBadge(cur)}</td>
+        <td class="val" style="color:var(--text2);font-size:12px">${fmtOrig(origAmt,cur)}</td>
+        <td class="val val-green">${fmtCur(i.amount)}</td>
+        <td><button class="del-btn" onclick="deleteIncome(${i.id})">✕</button></td>
+      </tr>`;
+    }).join('');
+
+  // By category
+  const byCat = {};
+  data.income.forEach(i => { byCat[i.cat] = (byCat[i.cat] || 0) + i.amount; });
+  const catDiv = document.getElementById('income-by-cat');
+  catDiv.innerHTML = Object.entries(byCat).sort((a,b) => b[1]-a[1]).map(([cat, val]) => {
+    const pct = total > 0 ? (val / total * 100) : 0;
+    const color = getColor(incomeColors, cat);
+    return `<div class="progress-row">
+      <div class="progress-meta">
+        <span class="progress-name">${cat}</span>
+        <span class="progress-vals">${fmtCur(val)} · ${fmtPct(pct)}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>
+    </div>`;
+  }).join('') || '<div style="padding:1rem;text-align:center;color:var(--text3);font-size:12px">لا توجد بيانات</div>';
+}
+
+// ===== EXPENSES =====
+function addExpense() {
+  const name = document.getElementById('ex-name').value.trim();
+  const amountOrig = parseFloat(document.getElementById('ex-amount').value) || 0;
+  const cur = document.getElementById('ex-cur').value;
+  if(!name || !amountOrig) return;
+  const amountSAR = toSAR(amountOrig, cur);
+  data.expenses.push({
+    id: Date.now(),
+    name,
+    cat: document.getElementById('ex-cat').value,
+    type: document.getElementById('ex-type').value,
+    amount: amountSAR,
+    amountOrig,
+    cur
+  });
+  document.getElementById('ex-name').value = '';
+  document.getElementById('ex-amount').value = '';
+  save(); renderExpenses();
+}
+
+function deleteExpense(id) {
+  data.expenses = data.expenses.filter(e => e.id !== id);
+  save(); renderExpenses();
+}
+
+function renderExpenses() {
+  const tbody = document.getElementById('expenses-tbody');
+  const total = data.expenses.reduce((s, e) => s + e.amount, 0);
+  document.getElementById('expenses-total').textContent = fmtCur(total);
+  document.getElementById('expenses-total-header').textContent = fmtCur(total);
+
+  tbody.innerHTML = data.expenses.length === 0 ?
+    `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text3);font-size:13px">لا توجد مصروفات بعد</td></tr>` :
+    data.expenses.map(e => {
+      const color = getColor(expenseColors, e.cat);
+      const typeColor = e.type === 'ثابت' ? 'var(--red)' : e.type === 'متغير' ? 'var(--gold)' : 'var(--blue)';
+      const cur = e.cur || 'SAR';
+      const origAmt = e.amountOrig || e.amount;
+      return `<tr>
+        <td style="font-weight:500;color:var(--text)">${e.name}</td>
+        <td><span style="background:${color}20;color:${color};padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">${e.cat}</span></td>
+        <td><span style="color:${typeColor};font-size:12px">${e.type}</span></td>
+        <td>${curBadge(cur)}</td>
+        <td class="val" style="color:var(--text2);font-size:12px">${fmtOrig(origAmt,cur)}</td>
+        <td class="val val-red">${fmtCur(e.amount)}</td>
+        <td><button class="del-btn" onclick="deleteExpense(${e.id})">✕</button></td>
+      </tr>`;
+    }).join('');
+
+  const byCat = {};
+  data.expenses.forEach(e => { byCat[e.cat] = (byCat[e.cat] || 0) + e.amount; });
+  const catDiv = document.getElementById('expenses-by-cat');
+  catDiv.innerHTML = Object.entries(byCat).sort((a,b) => b[1]-a[1]).map(([cat, val]) => {
+    const pct = total > 0 ? (val / total * 100) : 0;
+    const color = getColor(expenseColors, cat);
+    return `<div class="progress-row">
+      <div class="progress-meta">
+        <span class="progress-name">${cat}</span>
+        <span class="progress-vals">${fmtCur(val)} · ${fmtPct(pct)}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>
+    </div>`;
+  }).join('') || '<div style="padding:1rem;text-align:center;color:var(--text3);font-size:12px">لا توجد بيانات</div>';
+}
+
+// ===== ASSETS =====
+function addAsset() {
+  const name = document.getElementById('as-name').value.trim();
+  const valueOrig = parseFloat(document.getElementById('as-value').value) || 0;
+  const cur = document.getElementById('as-cur').value;
+  if(!name || !valueOrig) return;
+  const valueSAR = toSAR(valueOrig, cur);
+  data.assets.push({
+    id: Date.now(),
+    name,
+    type: document.getElementById('as-type').value,
+    liquid: document.getElementById('as-liquid').value,
+    value: valueSAR,
+    valueOrig,
+    cur
+  });
+  document.getElementById('as-name').value = '';
+  document.getElementById('as-value').value = '';
+  save(); renderAssets();
+}
+
+function deleteAsset(id) {
+  data.assets = data.assets.filter(a => a.id !== id);
+  save(); renderAssets();
+}
+
+function renderAssets() {
+  const tbody = document.getElementById('assets-tbody');
+  const total = data.assets.reduce((s, a) => s + a.value, 0);
+  document.getElementById('assets-total').textContent = fmtCur(total);
+  document.getElementById('assets-total-header').textContent = fmtCur(total);
+
+  tbody.innerHTML = data.assets.length === 0 ?
+    `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text3);font-size:13px">لا توجد أصول بعد</td></tr>` :
+    data.assets.map(a => {
+      const color = getColor(assetColors, a.type);
+      const liqColor = a.liquid === 'عالية' ? 'var(--green)' : a.liquid === 'متوسطة' ? 'var(--gold)' : 'var(--red)';
+      const pct = total > 0 ? (a.value / total * 100).toFixed(1) : 0;
+      const cur = a.cur || 'SAR';
+      const origVal = a.valueOrig || a.value;
+      return `<tr>
+        <td style="font-weight:500;color:var(--text)">${a.name}</td>
+        <td><span style="background:${color}20;color:${color};padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">${a.type}</span></td>
+        <td><span style="color:${liqColor};font-size:12px">${a.liquid}</span></td>
+        <td>${curBadge(cur)}</td>
+        <td class="val" style="color:var(--text2);font-size:12px">${fmtOrig(origVal,cur)}</td>
+        <td class="val val-green">${fmtCur(a.value)} <span style="font-size:10px;color:var(--text3)">(${pct}%)</span></td>
+        <td><button class="del-btn" onclick="deleteAsset(${a.id})">✕</button></td>
+      </tr>`;
+    }).join('');
+
+  // Breakdown by type
+  const byType = {};
+  data.assets.forEach(a => { byType[a.type] = (byType[a.type] || 0) + a.value; });
+  const bd = document.getElementById('assets-breakdown');
+  bd.innerHTML = Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([type,val])=>{
+    const pct = total > 0 ? (val/total*100) : 0;
+    const color = getColor(assetColors, type);
+    return `<div class="progress-row">
+      <div class="progress-meta"><span class="progress-name">${type}</span><span class="progress-vals">${fmtCur(val)} · ${fmtPct(pct)}</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>
+    </div>`;
+  }).join('') || '<div style="padding:1rem;text-align:center;color:var(--text3);font-size:12px">لا توجد بيانات</div>';
+
+  renderAssetTabs();
+}
+
+function renderAssetTabs() {
+  const liquidTypes = ['نقد'];
+  const fixedTypes = ['عقار','سيارة'];
+  const investTypes = ['استثمار','ذهب','أعمال'];
+
+  const makeList = (items) => items.length === 0
+    ? '<div style="padding:1rem;text-align:center;color:var(--text3);font-size:12px">لا توجد أصول في هذه الفئة</div>'
+    : items.map(a => {
+        const color = getColor(assetColors, a.type);
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-bottom:1px solid var(--border)">
+          <div><div style="font-size:13px;font-weight:500;color:var(--text)">${a.name}</div><div style="font-size:11px;color:${color};margin-top:2px">${a.type}</div></div>
+          <div style="font-family:'Tajawal';font-size:16px;font-weight:800;color:var(--green)">${fmtCur(a.value)}</div>
+        </div>`;
+      }).join('');
+
+  document.getElementById('assets-liquid-list').innerHTML = makeList(data.assets.filter(a=>liquidTypes.includes(a.type)));
+  document.getElementById('assets-fixed-list').innerHTML = makeList(data.assets.filter(a=>fixedTypes.includes(a.type)));
+  document.getElementById('assets-invest-list').innerHTML = makeList(data.assets.filter(a=>investTypes.includes(a.type)));
+}
+
+// ===== LIABILITIES =====
+function addLiability() {
+  const name = document.getElementById('li-name').value.trim();
+  const remainingOrig = parseFloat(document.getElementById('li-remaining').value) || 0;
+  const monthlyOrig = parseFloat(document.getElementById('li-monthly').value) || 0;
+  const cur = document.getElementById('li-cur').value;
+  if(!name || !remainingOrig) return;
+  const remainingSAR = toSAR(remainingOrig, cur);
+  const monthlySAR = toSAR(monthlyOrig, cur);
+  data.liabilities.push({
+    id: Date.now(),
+    name,
+    party: document.getElementById('li-party').value,
+    interest: parseFloat(document.getElementById('li-interest').value) || 0,
+    monthly: monthlySAR,
+    monthlyOrig,
+    remaining: remainingSAR,
+    remainingOrig,
+    original: remainingSAR,
+    cur
+  });
+  ['li-name','li-party','li-interest','li-monthly','li-remaining'].forEach(id => document.getElementById(id).value = '');
+  save(); renderLiabilities();
+}
+
+function deleteLiability(id) {
+  data.liabilities = data.liabilities.filter(l => l.id !== id);
+  save(); renderLiabilities();
+}
+
+function renderLiabilities() {
+  const tbody = document.getElementById('liabilities-tbody');
+  const total = data.liabilities.reduce((s,l)=>s+l.remaining, 0);
+  document.getElementById('liabilities-total').textContent = fmtCur(total);
+  document.getElementById('liabilities-total-header').textContent = fmtCur(total);
+
+  tbody.innerHTML = data.liabilities.length === 0
+    ? `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text3);font-size:13px">لا توجد ديون أو التزامات</td></tr>`
+    : data.liabilities.map(l => `<tr>
+        <td style="font-weight:500;color:var(--text)">${l.name}</td>
+        <td style="font-size:12px;color:var(--text2)">${l.party}</td>
+        <td style="color:${l.interest>5?'var(--red)':'var(--gold)'};font-size:12px">${l.interest}%</td>
+        <td class="val" style="color:var(--gold2)">${fmtCur(l.monthly)}</td>
+        <td class="val val-red">${fmtCur(l.remaining)}</td>
+        <td><button class="del-btn" onclick="deleteLiability(${l.id})">✕</button></td>
+      </tr>`).join('');
+
+  // Debt cards
+  const cardsDiv = document.getElementById('debt-cards');
+  if(data.liabilities.length === 0) {
+    cardsDiv.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text3);font-size:13px">🎉 لا توجد ديون مسجّلة</div>';
+    return;
+  }
+  cardsDiv.innerHTML = data.liabilities.map(l => {
+    const paid = l.original > 0 ? ((l.original - l.remaining) / l.original * 100) : 0;
+    const remaining_months = l.monthly > 0 ? Math.ceil(l.remaining / l.monthly) : '?';
+    const urgency = l.interest > 10 ? 'var(--red)' : l.interest > 5 ? 'var(--gold)' : 'var(--blue)';
+    return `<div class="debt-card">
+      <div class="debt-header">
+        <div class="debt-name">${l.name} <span style="font-size:11px;color:var(--text3)">${l.party}</span></div>
+        <div class="debt-amount">${fmtCur(l.remaining)}</div>
+      </div>
+      <div class="debt-meta">
+        <span>📅 القسط: ${fmtCur(l.monthly)}/شهر</span>
+        <span style="color:${urgency}">💰 الفائدة: ${l.interest}%</span>
+        <span>⏱ المتبقي: ~${remaining_months} شهر</span>
+      </div>
+      <div class="debt-progress"><div class="debt-fill" style="width:${Math.min(paid,100)}%"></div></div>
+      <div class="debt-pct">تم سداد ${paid.toFixed(1)}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ===== DONUT CHART =====
+function drawDonut(svgId, segments, total) {
+  const svg = document.getElementById(svgId);
+  if(!svg) return;
+  const cx=70, cy=70, r=55, strokeW=18;
+  if(total===0){svg.innerHTML=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="${strokeW}"/>`;return;}
+  let offset=0;
+  const circumference = 2*Math.PI*r;
+  let paths='';
+  segments.forEach(seg=>{
+    const frac=seg.value/total;
+    const dash=frac*circumference;
+    const gap=circumference-dash;
+    paths+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="${strokeW}" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})" style="transition:all .5s ease"/>`;
+    offset+=dash;
+  });
+  svg.innerHTML=paths;
+}
+
+// ===== ANALYSIS =====
+function renderAnalysis() {
+  const totalIncome = data.income.reduce((s,i)=>s+i.amount,0);
+  const totalExpenses = data.expenses.reduce((s,e)=>s+e.amount,0);
+  const totalAssets = data.assets.reduce((s,a)=>s+a.value,0);
+  const totalLiabilities = data.liabilities.reduce((s,l)=>s+l.remaining,0);
+  const totalMonthlyDebt = data.liabilities.reduce((s,l)=>s+l.monthly,0);
+
+  const netWorth = totalAssets - totalLiabilities;
+  const cashFlow = totalIncome - totalExpenses;
+  const savingsRate = totalIncome > 0 ? (cashFlow / totalIncome * 100) : 0;
+  const dti = totalIncome > 0 ? (totalMonthlyDebt / totalIncome * 100) : 0;
+  const burnRate = totalExpenses;
+  const runwayMonths = burnRate > 0 ? (data.assets.filter(a=>a.type==='نقد').reduce((s,a)=>s+a.value,0) / burnRate) : 0;
+
+  // Formulas section
+  document.getElementById('f-networth').textContent = fmtCur(netWorth);
+  document.getElementById('f-networth').style.color = netWorth >= 0 ? 'var(--gold2)' : 'var(--red)';
+  document.getElementById('f-cashflow').textContent = fmtCur(cashFlow);
+  document.getElementById('f-cashflow').style.color = cashFlow >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('f-savings').textContent = fmtPct(savingsRate);
+  document.getElementById('f-savings').style.color = savingsRate>=20?'var(--green)':savingsRate>=10?'var(--gold)':'var(--red)';
+  document.getElementById('f-dti').textContent = fmtPct(dti);
+  document.getElementById('f-dti').style.color = dti<35?'var(--green)':dti<50?'var(--gold)':'var(--red)';
+  document.getElementById('f-burn').textContent = fmtCur(burnRate) + '/شهر';
+  document.getElementById('f-burn-months').textContent = `معدل الاحتياطي النقدي: ~${runwayMonths.toFixed(1)} شهر من السيولة الحالية`;
+
+  // Health score (0-100)
+  let score = 0;
+  let bars = [];
+  if(totalIncome>0){
+    // 1. Savings rate (30pts)
+    const sr_score = Math.min(savingsRate/20*30, 30);
+    score += sr_score;
+    bars.push({label:'معدل الادخار', val:fmtPct(savingsRate), score:sr_score, max:30, color:'var(--green)'});
+    // 2. DTI (25pts)
+    const dti_score = dti<=0?25:dti<=35?25*(1-dti/100):Math.max(0,25-dti);
+    score += Math.max(0,dti_score);
+    bars.push({label:'نسبة الديون للدخل', val:fmtPct(dti), score:Math.max(0,dti_score), max:25, color:'var(--blue)'});
+    // 3. Net Worth positive (25pts)
+    const nw_score = netWorth>0?25:0;
+    score += nw_score;
+    bars.push({label:'صافي الثروة', val:netWorth>=0?'إيجابي ✓':'سلبي ✗', score:nw_score, max:25, color:'var(--gold)'});
+    // 4. Emergency fund (20pts)
+    const liquidAssets = data.assets.filter(a=>a.type==='نقد').reduce((s,a)=>s+a.value,0);
+    const efMonths = burnRate>0?liquidAssets/burnRate:0;
+    const ef_score = Math.min(efMonths/6*20, 20);
+    score += ef_score;
+    bars.push({label:'صندوق الطوارئ', val:`${efMonths.toFixed(1)} شهر`, score:ef_score, max:20, color:'var(--purple)'});
+  }
+
+  const scoreRound = Math.round(score);
+  const scoreEl = document.getElementById('health-score');
+  const labelEl = document.getElementById('health-label');
+  const descEl = document.getElementById('health-desc');
+  scoreEl.textContent = scoreRound > 0 ? scoreRound : '—';
+  if(scoreRound >= 80){
+    scoreEl.style.color='var(--green)';
+    labelEl.textContent='💚 ممتاز — وضع مالي قوي';
+    labelEl.style.color='var(--green)';
+    descEl.textContent='تمتلك صحة مالية ممتازة. استمر في نهجك واستكشف فرص النمو.';
+  } else if(scoreRound >= 60){
+    scoreEl.style.color='var(--gold2)';
+    labelEl.textContent='💛 جيد — مع مجال للتحسين';
+    labelEl.style.color='var(--gold2)';
+    descEl.textContent='وضعك المالي جيد لكن هناك نقاط تستحق الانتباه.';
+  } else if(scoreRound >= 40){
+    scoreEl.style.color='var(--gold)';
+    labelEl.textContent='🟠 مقبول — يحتاج خطة';
+    labelEl.style.color='var(--gold)';
+    descEl.textContent='وضعك يحتاج خطة تحسين واضحة. ابدأ بأكبر مشكلة أولاً.';
+  } else if(scoreRound > 0){
+    scoreEl.style.color='var(--red)';
+    labelEl.textContent='❤️‍🔥 يحتاج تدخل عاجل';
+    labelEl.style.color='var(--red)';
+    descEl.textContent='وضعك المالي يحتاج مراجعة عاجلة وخطة إنقاذ واضحة.';
+  } else {
+    descEl.textContent='أدخل بياناتك لحساب مؤشر الصحة المالية';
+  }
+
+  document.getElementById('health-bars').innerHTML = bars.map(b => `
+    <div style="margin-bottom:.75rem">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span style="color:var(--text)">${b.label}</span>
+        <span style="color:${b.color};font-weight:600">${b.val} (${Math.round(b.score)}/${b.max})</span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden">
+        <div style="height:100%;width:${b.max>0?(b.score/b.max*100):0}%;background:${b.color};border-radius:99px;transition:width .6s ease"></div>
+      </div>
+    </div>`).join('');
+
+  // Recommendations
+  const recs = [];
+  if(totalIncome === 0) recs.push({type:'info', text:'ابدأ بإدخال مصادر دخلك الشهرية لتفعيل التحليل الكامل.'});
+  if(savingsRate < 10 && totalIncome > 0) recs.push({type:'warn', text:`معدل ادخارك ${fmtPct(savingsRate)} أقل من الحد الموصى به (20%). حاول تقليص مصروفات التشغيل والترفيه أولاً.`});
+  if(savingsRate >= 20 && totalIncome > 0) recs.push({type:'good', text:`ممتاز! معدل ادخارك ${fmtPct(savingsRate)} — وأنت في المنطقة الصحية. فكّر في توجيه الفائض للاستثمار.`});
+  if(dti > 35 && totalIncome > 0) recs.push({type:'warn', text:`نسبة ديونك إلى دخلك ${fmtPct(dti)} — تجاوزت حد الـ35%. أولوية: سداد الديون ذات الفائدة العالية أولاً.`});
+  if(netWorth < 0) recs.push({type:'warn', text:'صافي ثروتك سلبي — ديونك تتجاوز أصولك. خطة سداد منظّمة ضرورة عاجلة.'});
+  const liquidAssets = data.assets.filter(a=>a.type==='نقد').reduce((s,a)=>s+a.value,0);
+  const efMonths = burnRate>0?liquidAssets/burnRate:0;
+  if(efMonths < 3 && burnRate > 0) recs.push({type:'warn', text:`صندوق طوارئك يكفي ${efMonths.toFixed(1)} شهر فقط. الهدف الموصى به: 6 أشهر من المصروفات (${fmtCur(burnRate*6)}).`});
+  if(efMonths >= 6) recs.push({type:'good', text:`ممتاز! صندوق طوارئك يكفي ${efMonths.toFixed(1)} شهر — أنت محمي من الصدمات المالية.`});
+  if(data.liabilities.some(l=>l.interest>10)) recs.push({type:'warn', text:'لديك ديون بفائدة عالية (>10%). استراتيجية "كرة الثلج" توصي بسداد الدين الأغلى أولاً.'});
+
+  const recDiv = document.getElementById('recommendations');
+  recDiv.innerHTML = recs.length === 0
+    ? '<div class="alert alert-info">💡 أدخل بياناتك لتظهر التوصيات المخصصة.</div>'
+    : recs.map(r => `<div class="alert alert-${r.type==='warn'?'warn':r.type==='good'?'good':'info'}">${r.type==='warn'?'⚠️':r.type==='good'?'✅':'💡'} ${r.text}</div>`).join('');
+}
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+  const totalIncome = data.income.reduce((s,i)=>s+i.amount,0);
+  const totalExpenses = data.expenses.reduce((s,e)=>s+e.amount,0);
+  const totalAssets = data.assets.reduce((s,a)=>s+a.value,0);
+  const totalLiabilities = data.liabilities.reduce((s,l)=>s+l.remaining,0);
+  const netWorth = totalAssets - totalLiabilities;
+  const cashFlow = totalIncome - totalExpenses;
+  const savingsRate = totalIncome > 0 ? (cashFlow/totalIncome*100) : 0;
+
+  // KPIs
+  document.getElementById('kpi-networth').textContent = fmtCur(netWorth);
+  document.getElementById('kpi-income').textContent = fmtCur(totalIncome);
+  document.getElementById('kpi-expenses').textContent = fmtCur(totalExpenses);
+  document.getElementById('kpi-cashflow').textContent = fmtCur(cashFlow);
+  document.getElementById('kpi-savings-rate').textContent = fmtPct(savingsRate);
+
+  // Sidebar
+  document.getElementById('sidebar-networth').textContent = fmtCur(netWorth);
+  document.getElementById('sidebar-networth').style.color = netWorth >= 0 ? 'var(--gold2)' : 'var(--red)';
+
+  // Badges
+  const cfBadge = document.getElementById('kpi-cf-badge');
+  cfBadge.textContent = cashFlow >= 0 ? '↑ فائض' : '↓ عجز';
+  cfBadge.className = 'kpi-badge ' + (cashFlow >= 0 ? 'badge-up' : 'badge-down');
+  const nwBadge = document.getElementById('kpi-nw-badge');
+  nwBadge.textContent = netWorth >= 0 ? '↑ إيجابي' : '↓ سلبي';
+  nwBadge.className = 'kpi-badge ' + (netWorth >= 0 ? 'badge-up' : 'badge-down');
+  const srBadge = document.getElementById('kpi-sr-badge');
+  srBadge.textContent = savingsRate>=20?'✓ ممتاز':savingsRate>=10?'~ مقبول':'✗ منخفض';
+  srBadge.className = 'kpi-badge ' + (savingsRate>=20?'badge-up':savingsRate>=10?'badge-neutral':'badge-down');
+
+  // Summary
+  document.getElementById('summary-assets').textContent = fmtCur(totalAssets);
+  document.getElementById('summary-assets-count').textContent = data.assets.length + ' بند';
+  document.getElementById('summary-liabilities').textContent = fmtCur(totalLiabilities);
+  document.getElementById('summary-liabilities-count').textContent = data.liabilities.length + ' بند';
+
+  // Alerts
+  const alerts = [];
+  if(cashFlow < 0 && totalIncome > 0) alerts.push({t:'warn',m:`⚠️ مصروفاتك تتجاوز إيراداتك بـ ${fmtCur(Math.abs(cashFlow))} هذا الشهر.`});
+  if(totalIncome===0) alerts.push({t:'info',m:'💡 ابدأ بإدخال إيراداتك لتفعيل لوحة القيادة الكاملة.'});
+  if(cashFlow>0 && savingsRate>=20) alerts.push({t:'good',m:`✅ ممتاز! تدخر ${fmtPct(savingsRate)} من دخلك هذا الشهر.`});
+  document.getElementById('dashboard-alerts').innerHTML = alerts.map(a=>`<div class="alert alert-${a.t==='warn'?'warn':a.t==='good'?'good':'info'}">${a.m}</div>`).join('');
+
+  // Donut charts
+  const incByCat = {};
+  data.income.forEach(i=>{incByCat[i.cat]=(incByCat[i.cat]||0)+i.amount});
+  const incSegs = Object.entries(incByCat).map(([cat,val])=>({label:cat,value:val,color:getColor(incomeColors,cat)}));
+  drawDonut('donut-income', incSegs, totalIncome);
+  document.getElementById('donut-income-val').textContent = totalIncome>999?Math.round(totalIncome/1000)+'K':Math.round(totalIncome);
+  document.getElementById('legend-income').innerHTML = incSegs.map(s=>`<div class="legend-item"><div class="legend-dot" style="background:${s.color}"></div>${s.label}: ${fmtCur(s.value)}</div>`).join('');
+
+  const expByCat = {};
+  data.expenses.forEach(e=>{expByCat[e.cat]=(expByCat[e.cat]||0)+e.amount});
+  const expSegs = Object.entries(expByCat).map(([cat,val])=>({label:cat,value:val,color:getColor(expenseColors,cat)}));
+  drawDonut('donut-expenses', expSegs, totalExpenses);
+  document.getElementById('donut-expenses-val').textContent = totalExpenses>999?Math.round(totalExpenses/1000)+'K':Math.round(totalExpenses);
+  document.getElementById('legend-expenses').innerHTML = expSegs.map(s=>`<div class="legend-item"><div class="legend-dot" style="background:${s.color}"></div>${s.label}: ${fmtCur(s.value)}</div>`).join('');
+
+  // Nav dots
+  document.getElementById('dot-income').style.background = totalIncome>0?'var(--green)':'var(--text3)';
+  document.getElementById('dot-expenses').style.background = totalExpenses>0?'var(--red)':'var(--text3)';
+  document.getElementById('dot-assets').style.background = data.assets.length>0?'var(--gold)':'var(--text3)';
+  document.getElementById('dot-liabilities').style.background = data.liabilities.length>0?'var(--blue)':'var(--text3)';
+}
+
+// ===== REFRESH ALL =====
+function refreshAll() {
+  renderIncome();
+  renderExpenses();
+  renderAssets();
+  renderLiabilities();
+  renderDashboard();
+  renderAnalysis();
+}
+
+// ===== QUICK CONVERTER =====
+function convertQuick() {
+  const amt = parseFloat(document.getElementById('conv-amount').value) || 0;
+  const from = document.getElementById('conv-from').value;
+  const sarAmt = toSAR(amt, from);
+  const res = document.getElementById('conv-results');
+  if(!amt){res.innerHTML='';return;}
+  const lines = [];
+  if(from !== 'SAR') lines.push(`🇸🇦 ${Math.round(sarAmt).toLocaleString('ar-SA')} ر.س`);
+  if(from !== 'USD') lines.push(`🇺🇸 ${(sarAmt/rates.USD).toFixed(2)} $`);
+  if(from !== 'TRY') lines.push(`🇹🇷 ${Math.round(sarAmt/rates.TRY).toLocaleString('ar-SA')} ₺`);
+  res.innerHTML = lines.map(l=>`<div style="color:var(--gold2);font-weight:600">${l}</div>`).join('');
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('last-update').textContent = new Date().toLocaleTimeString('ar-SA');
+  refreshAll();
+});
+</script>
+</body>
+</html>
